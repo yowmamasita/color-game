@@ -34,21 +34,15 @@
 
     },
 
-    update: function() {
-      //
-    },
-
   };
 
   function Box(type, x, y) {
     this.type = type;
-    this.x = x;
-    this.y = y;
-    this.iX = this.x / game.boxWidth;
-    this.iY = this.y / game.boxHeight;
+    this.iX = x / game.boxWidth;
+    this.iY = y / game.boxHeight;
     this.killed = false;
     // draw to board
-    this.sprite = game.add.sprite(this.x, this.y, this.type);
+    this.sprite = game.add.sprite(x, y, this.type);
     this.sprite.scale.setTo(50, 50);
     // attach input
     this.sprite.inputEnabled = true;
@@ -71,8 +65,23 @@
     var adjacent = this.getAdjacentSameType();
     if (adjacent.length) {
       recursiveDestroyAdjacent(this);
+      recursiveMoveLeft();
+      recursiveMoveDownAdjacent(this.iX, 'leftright');
     }
-    // game.typeMap[this.type].map(destroyAdjacent(this.iX, this.iY));
+  };
+
+  Box.prototype.moveX = function(iX) {
+    game.boxMap[this.iY][this.iX] = null;
+    this.iX = iX;
+    this.sprite.x = this.iX * game.boxWidth;
+    game.boxMap[this.iY][this.iX] = this;
+  };
+
+  Box.prototype.moveY = function(iY) {
+    game.boxMap[this.iY][this.iX] = null;
+    this.iY = iY;
+    this.sprite.y = this.iY * game.boxHeight;
+    game.boxMap[this.iY][this.iX] = this;
   };
 
   Box.prototype.getAdjacentSameType = function() {
@@ -109,16 +118,64 @@
   }
 
   function recursiveDestroyAdjacent(box) {
-    box.killed = true;
-    box.sprite.kill();
-    box.getAdjacentSameType().map(recursiveDestroyAdjacent);
-  }
-
-  function destroyAdjacent(x, y) {
-    return function(box) {
+    if (box && !box.killed) {
       box.killed = true;
       box.sprite.kill();
+      var adjacent = box.getAdjacentSameType();
+      adjacent.forEach(recursiveDestroyAdjacent);
     }
+  }
+
+  function recursiveMoveLeft() {
+    for (var i = 0; i < game.xLength - 1; i++) {
+      var column = getColumn(i);
+      if (!column.values.length) {
+        var j = 1;
+        var column2 = [];
+        while (!column2.length) {
+          column2 = getColumn(i + j++).values;
+        }
+        column2.forEach(function(box) {
+          box.moveX(i);
+        });
+      }
+    }
+  }
+
+  function recursiveMoveDownAdjacent(x, direction) {
+    var column = getColumn(x);
+    var y = game.yLength - 1;
+    for (var i = 0; i < column.values.length; i++) {
+      column.values[i].moveY(y--);
+    }
+    while (y > 0) {
+      game.boxMap[y--][x] = null;
+    }
+    if (x > 0 && direction.indexOf('left') > -1) {
+      recursiveMoveDownAdjacent(x - 1, 'left');
+    }
+    if (x < game.xLength && direction.indexOf('right') > -1) {
+      recursiveMoveDownAdjacent(x + 1, 'right');
+    }
+  }
+
+  function getColumn(x) {
+    var column = [];
+    var gap = false, hasBox = true;
+    for (var i = game.yLength - 1; i >= 0; i--) {
+      var box = game.boxMap[i][x];
+      if (box && !box.killed) {
+        column.push(game.boxMap[i][x]);
+        if (!hasBox) gap = true;
+      }
+      else {
+        hasBox = false;
+      }
+    }
+    return {
+      gap: gap,
+      values: column,
+    };
   }
 
   game.state.add('Game', Game);
