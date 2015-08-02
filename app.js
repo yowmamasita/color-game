@@ -6,28 +6,48 @@
   var Game = {
     preload: function() {
 
-      // game.load.image('sky', 'assets/sky.png');
+      game.load.image('t1', 'assets/t1.png');
+      game.load.image('t2', 'assets/t2.png');
+      game.load.image('t3', 'assets/t3.png');
+      game.load.image('t4', 'assets/t4.png');
 
     },
 
     create: function() {
 
-      // game.add.sprite(0, 0, 'star');
-      var graphics = game.add.graphics(0, 0);
+      game.physics.startSystem(Phaser.Physics.ARCADE);
+      // var graphics = game.add.graphics();
 
-      // 0x44B3C2
-      // 0xF1A94E
-      // 0xE45641
-      // 0x5D4C46
-      // 0x7B8D8E
-      // 0xF2EDD8
+      var tileWidth = 50;
+      var tileHeight = 50;
 
-      var color = this.randomColor();
-      graphics.beginFill(color);
-      graphics.lineStyle(1, color);
-      graphics.drawRect(0, 0, 50, 50);
+      var posX = 0;
+      var posY = 0;
+
+      while (posY < game.height) {
+
+        while (posX < game.width) {
+
+          // var color = this.randomColor();
+          // graphics.beginFill(color);
+          // graphics.lineStyle(1, color);
+          // graphics.drawRect(posX, posY, tileWidth, tileHeight);
+
+          var tile = game.add.sprite(posX, posY, this.randomTile());
+          tile.scale.setTo(50, 50);
+
+          posX += tileWidth;
+
+        }
+
+        posX = 0;
+        posY += tileHeight;
+
+      }
 
       console.log('Heyyyyy');
+      console.log(game.width);
+      console.log(game.height);
 
     },
 
@@ -37,6 +57,10 @@
 
     randomColor: function() {
       return this.colors[Math.floor(Math.random() * this.colors.length)];
+    },
+
+    randomTile: function() {
+      return 't' + (Math.floor(Math.random() * 4) + 1);
     },
 
   };
