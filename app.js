@@ -71,8 +71,8 @@
     var adjacent = this.getAdjacentSameType();
     if (adjacent.length) {
       var columnNumbers = recursiveDestroyAdjacent(this);
+      pileAtBottom(columnNumbers);
       checkEmptyColumns(columnNumbers);
-      recursiveMoveDownAdjacent(this.iX, 'leftright');
       // update score
       game.scoreText.setText('Score ' + game.scoreInt);
     }
@@ -149,32 +149,17 @@
     }
   }
 
-  function moveColumnXToY(source, destination) {
-    if (source >= game.xLength) return;
-    var column = getColumn(source);
-    if (!column.length) moveColumnXToY(source + 1, destination);
-    else {
-      column.forEach(function(box) {
-        box.moveX(destination);
-      });
-      moveColumnXToY(source + 1, source);
-    }
-  }
-
-  function recursiveMoveDownAdjacent(x, direction) {
-    var column = getColumn(x);
-    var y = game.yLength - 1;
-    for (var i = 0; i < column.length; i++) {
-      column[i].moveY(y--);
-    }
-    while (y > 0) {
-      game.boxMap[y--][x] = null;
-    }
-    if (x > 0 && direction.indexOf('left') > -1) {
-      recursiveMoveDownAdjacent(x - 1, 'left');
-    }
-    if (x < game.xLength && direction.indexOf('right') > -1) {
-      recursiveMoveDownAdjacent(x + 1, 'right');
+  function pileAtBottom(columns) {
+    for (var i = 0; i < columns.length; i++) {
+      var x = parseInt(columns[i]);
+      var column = getColumn(x);
+      var y = game.yLength - 1;
+      for (var j = 0; j < column.length; j++) {
+        column[j].moveY(y--);
+      }
+      while (y > 0) {
+        game.boxMap[y--][x] = null;
+      }
     }
   }
 
@@ -187,6 +172,18 @@
       }
     }
     return column;
+  }
+
+  function moveColumnXToY(source, destination) {
+    if (source >= game.xLength) return;
+    var column = getColumn(source);
+    if (!column.length) moveColumnXToY(source + 1, destination);
+    else {
+      column.forEach(function(box) {
+        box.moveX(destination);
+      });
+      moveColumnXToY(source + 1, source);
+    }
   }
 
   game.state.add('Game', Game);
