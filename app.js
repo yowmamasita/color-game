@@ -15,80 +15,50 @@
 
     create: function() {
 
-      this.tiles = game.add.physicsGroup(Phaser.Physics.ARCADE);
-      this.tiles.enableBody = true;
-
-      // var graphics = game.add.graphics();
-
-      this.tileWidth = 50;
-      this.tileHeight = 50;
-
+      // fill board with boxes
+      this.boxWidth = 50;
+      this.boxHeight = 50;
       var posX = 0;
       var posY = 0;
-
       while (posY < game.height) {
-
         while (posX < game.width) {
-
-          // var color = this.randomColor();
-          // graphics.beginFill(color);
-          // graphics.lineStyle(1, color);
-          // graphics.drawRect(posX, posY, this.tileWidth, this.tileHeight);
-
-          // var tile = game.add.sprite(posX, posY, this.randomTile());
-          var tile = this.tiles.create(posX, posY, this.randomTile());
-          tile.scale.setTo(50, 50);
-
-          tile.body.collideWorldBounds = true;
-          tile.body.gravity.y = 300;
-
-          tile.inputEnabled = true;
-          tile.events.onInputDown.add(this.poof, tile);
-          tile.events.onRemovedFromWorld.add(this.test, tile);
-          console.log(tile.events);
-
-          posX += this.tileWidth * 2;
-
+          var box = new Box(this.randomBoxType(), posX, posY);
+          posX += this.boxWidth;
         }
-
         posX = 0;
-        posY += this.tileHeight * 2;
-
+        posY += this.boxHeight;
       }
-
 
     },
 
     update: function() {
-
-      game.physics.arcade.collide(this.tiles);
-
+      //
     },
 
     randomColor: function() {
       return this.colors[Math.floor(Math.random() * this.colors.length)];
     },
 
-    randomTile: function() {
+    randomBoxType: function() {
       return 't' + (Math.floor(Math.random() * 4) + 1);
-    },
-
-    poof: function(tile) {
-      tile.kill();
-    },
-
-    test: function(tile) {
-      console.log('HEY');
     },
 
   };
 
-  Game.colors = [
-    0x468966,
-    0xFFF0A5,
-    0xFFB03B,
-    0xB64926,
-  ];
+  function Box(type, x, y) {
+    this.x = x;
+    this.y = y;
+    this.type = type;
+    this.sprite = game.add.sprite(this.x, this.y, this.type);
+    this.sprite.scale.setTo(50, 50);
+    // attach input
+    this.sprite.inputEnabled = true;
+    this.sprite.events.onInputDown.add(this.destroy, this);
+  }
+
+  Box.prototype.destroy = function() {
+    this.sprite.kill();
+  };
 
   game.state.add('Game', Game);
   game.state.start('Game');
