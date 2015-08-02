@@ -15,11 +15,13 @@
 
     create: function() {
 
-      game.physics.startSystem(Phaser.Physics.ARCADE);
+      this.tiles = game.add.physicsGroup(Phaser.Physics.ARCADE);
+      this.tiles.enableBody = true;
+
       // var graphics = game.add.graphics();
 
-      var tileWidth = 50;
-      var tileHeight = 50;
+      this.tileWidth = 50;
+      this.tileHeight = 50;
 
       var posX = 0;
       var posY = 0;
@@ -31,28 +33,36 @@
           // var color = this.randomColor();
           // graphics.beginFill(color);
           // graphics.lineStyle(1, color);
-          // graphics.drawRect(posX, posY, tileWidth, tileHeight);
+          // graphics.drawRect(posX, posY, this.tileWidth, this.tileHeight);
 
-          var tile = game.add.sprite(posX, posY, this.randomTile());
+          // var tile = game.add.sprite(posX, posY, this.randomTile());
+          var tile = this.tiles.create(posX, posY, this.randomTile());
           tile.scale.setTo(50, 50);
 
-          posX += tileWidth;
+          tile.body.collideWorldBounds = true;
+          tile.body.gravity.y = 300;
+
+          tile.inputEnabled = true;
+          tile.events.onInputDown.add(this.poof, tile);
+          tile.events.onRemovedFromWorld.add(this.test, tile);
+          console.log(tile.events);
+
+          posX += this.tileWidth * 2;
 
         }
 
         posX = 0;
-        posY += tileHeight;
+        posY += this.tileHeight * 2;
 
       }
 
-      console.log('Heyyyyy');
-      console.log(game.width);
-      console.log(game.height);
 
     },
 
     update: function() {
-      //
+
+      game.physics.arcade.collide(this.tiles);
+
     },
 
     randomColor: function() {
@@ -61,6 +71,14 @@
 
     randomTile: function() {
       return 't' + (Math.floor(Math.random() * 4) + 1);
+    },
+
+    poof: function(tile) {
+      tile.kill();
+    },
+
+    test: function(tile) {
+      console.log('HEY');
     },
 
   };
