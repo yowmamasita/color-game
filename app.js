@@ -31,6 +31,13 @@
         posX = 0;
         posY += game.boxHeight;
       }
+      // score
+      game.scoreText = game.add.text(5, 5, '0', {
+        font: '40px Arial',
+        fill: '#fff',
+        stroke: '#000',
+        strokeThickness: 1,
+      });
 
     },
 
