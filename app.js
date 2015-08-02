@@ -66,6 +66,8 @@
     if (adjacent.length) {
       recursiveDestroyAdjacent(this);
       recursiveMoveLeft();
+      recursiveMoveLeft();
+      recursiveMoveLeft();
       recursiveMoveDownAdjacent(this.iX, 'leftright');
     }
   };
@@ -128,13 +130,9 @@
 
   function recursiveMoveLeft() {
     for (var i = 0; i < game.xLength - 1; i++) {
-      var column = getColumn(i);
-      if (!column.values.length) {
-        var j = 1;
-        var column2 = [];
-        while (!column2.length) {
-          column2 = getColumn(i + j++).values;
-        }
+      var column = getColumn(i).values;
+      if (!column.length) {
+        var column2 = getColumn(i + 1).values;
         column2.forEach(function(box) {
           box.moveX(i);
         });
