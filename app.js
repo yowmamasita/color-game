@@ -15,7 +15,6 @@
       game.xLength = game.width / game.boxWidth;
       game.yLength = game.height / game.boxHeight;
       game.boxMap = [];
-      game.typeMap = { t1: [], t2: [], t3: [], t4: [] };
 
     },
 
@@ -32,7 +31,8 @@
         posY += game.boxHeight;
       }
       // score
-      game.scoreText = game.add.text(5, 5, '0', {
+      game.scoreInt = 0;
+      game.scoreText = game.add.text(8, 6, 'Score ' + game.scoreInt, {
         font: '40px Arial',
         fill: '#fff',
         stroke: '#000',
@@ -63,7 +63,6 @@
     // add to *Map
     if (!box.iX) game.boxMap[box.iY] = [];
     game.boxMap[box.iY].push(box);
-    game.typeMap[box.type].push(box);
 
     return box;
   };
@@ -71,11 +70,11 @@
   Box.prototype.destroy = function() {
     var adjacent = this.getAdjacentSameType();
     if (adjacent.length) {
-      recursiveDestroyAdjacent(this);
-      recursiveMoveLeft();
-      recursiveMoveLeft();
-      recursiveMoveLeft();
+      var columnNumbers = recursiveDestroyAdjacent(this);
+      checkEmptyColumns(columnNumbers);
       recursiveMoveDownAdjacent(this.iX, 'leftright');
+      // update score
+      game.scoreText.setText('Score ' + game.scoreInt);
     }
   };
 
@@ -126,32 +125,47 @@
     return adjacent;
   }
 
-  function recursiveDestroyAdjacent(box) {
+  function recursiveDestroyAdjacent(box, state) {
+    if (!state) state = {};
     if (box && !box.killed) {
       box.killed = true;
       box.sprite.kill();
+      state[box.iX] = true;
       var adjacent = box.getAdjacentSameType();
-      adjacent.forEach(recursiveDestroyAdjacent);
+      adjacent.forEach(function(b) {
+        recursiveDestroyAdjacent(b, state);
+      });
+      game.scoreInt += 1;
+    }
+    // return numbers of updated columns
+    return Object.keys(state);
+  }
+
+  function checkEmptyColumns(columns) {
+    for (var i = 0; i < columns.length; i++) {
+      var x = parseInt(columns[i]);
+      var column = getColumn(x);
+      if (!column.length) moveColumnXToY(x + 1, x);
     }
   }
 
-  function recursiveMoveLeft() {
-    for (var i = 0; i < game.xLength - 1; i++) {
-      var column = getColumn(i).values;
-      if (!column.length) {
-        var column2 = getColumn(i + 1).values;
-        column2.forEach(function(box) {
-          box.moveX(i);
-        });
-      }
+  function moveColumnXToY(source, destination) {
+    if (source >= game.xLength) return;
+    var column = getColumn(source);
+    if (!column.length) moveColumnXToY(source + 1, destination);
+    else {
+      column.forEach(function(box) {
+        box.moveX(destination);
+      });
+      moveColumnXToY(source + 1, source);
     }
   }
 
   function recursiveMoveDownAdjacent(x, direction) {
     var column = getColumn(x);
     var y = game.yLength - 1;
-    for (var i = 0; i < column.values.length; i++) {
-      column.values[i].moveY(y--);
+    for (var i = 0; i < column.length; i++) {
+      column[i].moveY(y--);
     }
     while (y > 0) {
       game.boxMap[y--][x] = null;
@@ -166,21 +180,13 @@
 
   function getColumn(x) {
     var column = [];
-    var gap = false, hasBox = true;
     for (var i = game.yLength - 1; i >= 0; i--) {
       var box = game.boxMap[i][x];
       if (box && !box.killed) {
         column.push(game.boxMap[i][x]);
-        if (!hasBox) gap = true;
-      }
-      else {
-        hasBox = false;
       }
     }
-    return {
-      gap: gap,
-      values: column,
-    };
+    return column;
   }
 
   game.state.add('Game', Game);
