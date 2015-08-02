@@ -49,6 +49,7 @@
     this.x = x;
     this.y = y;
     this.type = type;
+    // draw to board
     this.sprite = game.add.sprite(this.x, this.y, this.type);
     this.sprite.scale.setTo(50, 50);
     // attach input
