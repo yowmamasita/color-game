@@ -4,8 +4,8 @@
   var game = new Phaser.Game(800, 600, Phaser.AUTO, 'game');
 
   var Game = {
-    preload: function() {
 
+    preload: function() {
       game.load.image('t1', 'assets/t1.png');
       game.load.image('t2', 'assets/t2.png');
       game.load.image('t3', 'assets/t3.png');
@@ -14,7 +14,6 @@
     },
 
     create: function() {
-
       // fill board with boxes
       this.boxWidth = 50;
       this.boxHeight = 50;
@@ -22,7 +21,7 @@
       var posY = 0;
       while (posY < game.height) {
         while (posX < game.width) {
-          var box = new Box(this.randomBoxType(), posX, posY);
+          Box.randomCreate(posX, posY);
           posX += this.boxWidth;
         }
         posX = 0;
@@ -33,14 +32,6 @@
 
     update: function() {
       //
-    },
-
-    randomColor: function() {
-      return this.colors[Math.floor(Math.random() * this.colors.length)];
-    },
-
-    randomBoxType: function() {
-      return 't' + (Math.floor(Math.random() * 4) + 1);
     },
 
   };
@@ -56,6 +47,11 @@
     this.sprite.inputEnabled = true;
     this.sprite.events.onInputDown.add(this.destroy, this);
   }
+
+  Box.randomCreate = function(x, y) {
+    var randomType = 't' + (Math.floor(Math.random() * 4) + 1);
+    var box = new Box(randomType, x, y);
+  };
 
   Box.prototype.destroy = function() {
     this.sprite.kill();
