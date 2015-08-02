@@ -70,8 +70,7 @@
   Box.prototype.destroy = function() {
     var adjacent = this.getAdjacentSameType();
     if (adjacent.length) {
-      this.killed = true;
-      this.sprite.kill();
+      recursiveDestroyAdjacent(this);
     }
     // game.typeMap[this.type].map(destroyAdjacent(this.iX, this.iY));
   };
@@ -110,7 +109,9 @@
   }
 
   function recursiveDestroyAdjacent(box) {
-    //
+    box.killed = true;
+    box.sprite.kill();
+    box.getAdjacentSameType().map(recursiveDestroyAdjacent);
   }
 
   function destroyAdjacent(x, y) {
